@@ -47,8 +47,9 @@ class _SearchPageState extends State<SearchPage> {
         title: Form(
           key: _formKey,
           child: TextFormField(
-            decoration:
-                InputDecoration(labelText: 'Search', alignLabelWithHint: true),
+            decoration: InputDecoration(
+              labelText: 'Search',
+            ),
           ),
         ),
         actions: <Widget>[
