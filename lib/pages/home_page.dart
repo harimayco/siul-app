@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert' as convert;
+import 'package:http/http.dart' as http;
+import 'package:siul/utils/env.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key}) : super(key: key);
@@ -71,6 +74,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       )),
                 ];
               }),
+          Padding(
+            padding: EdgeInsets.only(left: 10),
+          )
           /*
           DropdownButton<String>(
             value: dropdownValue,
@@ -100,41 +106,58 @@ class _MyHomePageState extends State<MyHomePage> {
           ),*/
         ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: FutureBuilder(
+          future: _loadPosts(),
+          builder: (BuildContext context, snapshot) {
+            if (snapshot.hasData) {
+              return _buildListView(snapshot.data);
+            }
+
+            return Center(child: CircularProgressIndicator());
+          }),
     );
+  }
+
+  Widget _buildListView(data) {
+    return ListView.builder(
+        itemCount: data.length,
+        itemBuilder: (BuildContext context, index) {
+          return ListTile(
+            leading: Container(
+                width: 30.0,
+                height: 30.0,
+                decoration: data[index]['image'] != null
+                    ? new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: new DecorationImage(
+                            fit: BoxFit.cover,
+                            image: new NetworkImage(
+                                "$API_URL/${data[index]['image']}")))
+                    : null),
+            title: Text(data[index]['title']),
+            onTap: () {
+              Navigator.pushNamed(context, '/article', arguments: [
+                data[index]['id'],
+                data[index]['title'],
+                data[index]['image']
+              ]);
+            },
+          );
+        });
+  }
+
+  Future _loadPosts() async {
+    var url = '$API_URL/api/post';
+
+    // Await the http get response, then decode the json-formatted response.
+    //var wait = await Future.delayed(Duration(seconds: 2));
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      var jsonResponse = convert.jsonDecode(response.body);
+      return jsonResponse['data'];
+    }
+
+    return null;
   }
 }

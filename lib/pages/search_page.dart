@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siul/utils/env.dart';
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key}) : super(key: key);
@@ -20,6 +21,7 @@ class _SearchPageState extends State<SearchPage> {
   int _counter = 0;
   String dropdownValue = '';
   final _formKey = GlobalKey<FormState>();
+  final _searchController = TextEditingController();
 
   void _incrementCounter() {
     setState(() {
@@ -47,8 +49,29 @@ class _SearchPageState extends State<SearchPage> {
         title: Form(
           key: _formKey,
           child: TextFormField(
+            controller: _searchController,
+            autofocus: true,
+            cursorColor: Colors.white,
+            showCursor: true,
+            style: new TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              labelText: 'Search',
+              focusColor: Colors.white,
+              hasFloatingPlaceholder: false,
+              hintText: 'Search',
+              fillColor: Colors.white,
+              alignLabelWithHint: true,
+              focusedBorder: OutlineInputBorder(
+                gapPadding: 1,
+                borderSide: BorderSide(color: Colors.transparent),
+              ),
+              suffixIcon: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.white54,
+                  ),
+                  onPressed: () {
+                    _searchController.clear();
+                  }),
             ),
           ),
         ),
