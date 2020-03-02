@@ -68,7 +68,7 @@ class Article extends StatelessWidget {
                           end: FractionalOffset.bottomCenter,
                           colors: [
                             Colors.grey.withOpacity(0.0),
-                            Colors.black38,
+                            Colors.blue,
                           ],
                           stops: [
                             0.0,

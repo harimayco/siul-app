@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
+import 'package:loadmore/loadmore.dart';
 import 'package:siul/utils/env.dart';
+import 'dart:io';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key}) : super(key: key);
@@ -22,6 +24,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String dropdownValue = '';
+
+  List item = [];
+  int totalCount = 0;
+  int currentPage = 0;
 
   void _incrementCounter() {
     setState(() {
@@ -54,19 +60,57 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.pushNamed(context, '/search');
               }),
           PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'exit') {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Are you sure want to exit?'),
+                          actions: <Widget>[
+                            new FlatButton(
+                              child: new Text("No"),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            new FlatButton(
+                              child: new Text("Yes"),
+                              onPressed: () {
+                                exit(0);
+                              },
+                            )
+                          ],
+                        );
+                      });
+                  return;
+                }
+
+                Navigator.pushNamed(context, '/$value');
+              },
               child: Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) {
                 return [
                   PopupMenuItem(
-                      value: 'about',
+                    value: 'about',
+                    child: InkWell(
+                      onTap: () {},
                       child: ListTile(
                         title: Text('About'),
-                      )),
+                      ),
+                    ),
+                  ),
                   PopupMenuItem(
-                      value: 'help',
+                    value: 'help',
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/help');
+                      },
                       child: ListTile(
                         title: Text('Help'),
-                      )),
+                      ),
+                    ),
+                  ),
                   PopupMenuItem(
                       value: 'exit',
                       child: ListTile(
@@ -106,15 +150,21 @@ class _MyHomePageState extends State<MyHomePage> {
           ),*/
         ],
       ),
-      body: FutureBuilder(
-          future: _loadPosts(),
-          builder: (BuildContext context, snapshot) {
-            if (snapshot.hasData) {
-              return _buildListView(snapshot.data);
+      body: Container(
+        child: LoadMore(
+          delegate: TestDelegate(),
+          textBuilder: (status) {
+            if (status == LoadMoreStatus.nomore && totalCount == 0) {
+              return "No records found";
             }
 
-            return Center(child: CircularProgressIndicator());
-          }),
+            return DefaultLoadMoreTextBuilder.english(status);
+          },
+          child: _buildListView(item),
+          isFinish: _isFinish(),
+          onLoadMore: _loadPosts,
+        ),
+      ),
     );
   }
 
@@ -146,18 +196,79 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  Future _loadPosts() async {
-    var url = '$API_URL/api/post';
+  bool _isFinish() {
+    if (currentPage == 0) {
+      return false;
+    }
 
+    if (item.length < totalCount) {
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<bool> _loadPosts() async {
+    var url = '$API_URL/api/post?page=' + (currentPage + 1).toString();
+    //await Future.delayed(Duration(seconds: 3));
     // Await the http get response, then decode the json-formatted response.
     //var wait = await Future.delayed(Duration(seconds: 2));
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body);
-      return jsonResponse['data'];
+      setState(() {
+        currentPage = jsonResponse['current_page'];
+
+        item.addAll(jsonResponse['data']);
+        totalCount = jsonResponse['total'];
+      });
+
+      return true;
     }
 
-    return null;
+    return false;
+  }
+}
+
+class TestDelegate extends DefaultLoadMoreDelegate {
+  @override
+  Widget buildChild(LoadMoreStatus status,
+      {LoadMoreTextBuilder builder = DefaultLoadMoreTextBuilder.chinese}) {
+    String text = builder(status);
+    if (status == LoadMoreStatus.fail) {
+      return Container(
+        child: Text(text),
+      );
+    }
+    if (status == LoadMoreStatus.idle) {
+      return Text(text);
+    }
+    if (status == LoadMoreStatus.loading) {
+      return Container(
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(
+              width: 33,
+              height: 33,
+              child: CircularProgressIndicator(
+                backgroundColor: Colors.white,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(text),
+            ),
+          ],
+        ),
+      );
+    }
+    if (status == LoadMoreStatus.nomore) {
+      return Text(text);
+    }
+
+    return Text(text);
   }
 }

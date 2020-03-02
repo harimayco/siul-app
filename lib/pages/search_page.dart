@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:siul/utils/env.dart';
+import 'dart:convert' as convert;
+import 'package:http/http.dart' as http;
+import 'package:loadmore/loadmore.dart';
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key}) : super(key: key);
@@ -22,6 +25,11 @@ class _SearchPageState extends State<SearchPage> {
   String dropdownValue = '';
   final _formKey = GlobalKey<FormState>();
   final _searchController = TextEditingController();
+  String _searchText = '';
+
+  List item = [];
+  int totalCount = 0;
+  int currentPage = 0;
 
   void _incrementCounter() {
     setState(() {
@@ -53,6 +61,16 @@ class _SearchPageState extends State<SearchPage> {
             autofocus: true,
             cursorColor: Colors.white,
             showCursor: true,
+            autocorrect: false,
+            onFieldSubmitted: (value) {
+              setState(() {
+                item = [];
+                totalCount = 0;
+                currentPage = 0;
+
+                _searchText = value;
+              });
+            },
             style: new TextStyle(color: Colors.white),
             decoration: InputDecoration(
               focusColor: Colors.white,
@@ -81,6 +99,13 @@ class _SearchPageState extends State<SearchPage> {
               onPressed: () {
                 if (_formKey.currentState.validate()) {
                   // Process data.
+                  setState(() {
+                    item = [];
+                    totalCount = 0;
+                    currentPage = 0;
+
+                    _searchText = _searchController.text.toString();
+                  });
                 }
               }),
           /*
@@ -112,41 +137,130 @@ class _SearchPageState extends State<SearchPage> {
           ),*/
         ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
+      body: Container(
+        child: _searchText == ''
+            ? null
+            : LoadMore(
+                delegate: TestDelegate(),
+                textBuilder: (status) {
+                  if (status == LoadMoreStatus.nomore && totalCount == 0) {
+                    return "No records found";
+                  }
+
+                  return DefaultLoadMoreTextBuilder.english(status);
+                },
+                child: _buildListView(item),
+                isFinish: _isFinish(),
+                onLoadMore: _loadPosts,
+              ),
+      ),
+    );
+  }
+
+  Widget _buildListView(data) {
+    return ListView.builder(
+        itemCount: data.length,
+        itemBuilder: (BuildContext context, index) {
+          return ListTile(
+            leading: Container(
+                width: 30.0,
+                height: 30.0,
+                decoration: data[index]['image'] != null
+                    ? new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: new DecorationImage(
+                            fit: BoxFit.cover,
+                            image: new NetworkImage(
+                                "$API_URL/${data[index]['image']}")))
+                    : null),
+            title: Text(data[index]['title']),
+            onTap: () {
+              Navigator.pushNamed(context, '/article', arguments: [
+                data[index]['id'],
+                data[index]['title'],
+                data[index]['image']
+              ]);
+            },
+          );
+        });
+  }
+
+  bool _isFinish() {
+    if (currentPage == 0) {
+      return false;
+    }
+
+    if (item.length < totalCount) {
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<bool> _loadPosts() async {
+    var url = '$API_URL/api/post?search=' +
+        _searchText +
+        '&page=' +
+        (currentPage + 1).toString();
+    //await Future.delayed(Duration(seconds: 3));
+    // Await the http get response, then decode the json-formatted response.
+    //var wait = await Future.delayed(Duration(seconds: 2));
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      var jsonResponse = convert.jsonDecode(response.body);
+      setState(() {
+        currentPage = jsonResponse['current_page'];
+
+        item.addAll(jsonResponse['data']);
+        totalCount = jsonResponse['total'];
+      });
+
+      return true;
+    }
+
+    return false;
+  }
+}
+
+class TestDelegate extends DefaultLoadMoreDelegate {
+  @override
+  Widget buildChild(LoadMoreStatus status,
+      {LoadMoreTextBuilder builder = DefaultLoadMoreTextBuilder.chinese}) {
+    String text = builder(status);
+    if (status == LoadMoreStatus.fail) {
+      return Container(
+        child: Text(text),
+      );
+    }
+    if (status == LoadMoreStatus.idle) {
+      return Text(text);
+    }
+    if (status == LoadMoreStatus.loading) {
+      return Container(
+        alignment: Alignment.center,
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+            SizedBox(
+              width: 33,
+              height: 33,
+              child: CircularProgressIndicator(
+                backgroundColor: Colors.white,
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(text),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+      );
+    }
+    if (status == LoadMoreStatus.nomore) {
+      return Text(text);
+    }
+
+    return Text(text);
   }
 }

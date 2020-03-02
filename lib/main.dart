@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:siul/pages/about.dart';
 import 'package:siul/pages/article.dart';
 import 'package:siul/pages/home_page.dart';
 import 'package:siul/pages/search_page.dart';
 import 'package:siul/utils/splash.dart';
+import 'package:siul/pages/help.dart';
 
 void main() => runApp(MyApp());
 
@@ -23,7 +25,7 @@ class MyApp extends StatelessWidget {
           // or simply save your changes to "hot reload" in a Flutter IDE).
           // Notice that the counter didn't reset back to zero; the application
           // is not restarted.
-          primarySwatch: Colors.blue,
+          primaryColor: Colors.blue[900],
         ),
         initialRoute: '/',
         routes: {
@@ -32,6 +34,8 @@ class MyApp extends StatelessWidget {
           '/home': (context) => MyHomePage(),
           // When navigating to the "/second" route, build the SecondScreen widget.
           '/search': (context) => SearchPage(),
+          '/about': (context) => AboutPage(),
+          '/help': (context) => HelpPage()
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/article') {
