@@ -22,23 +22,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   String dropdownValue = '';
+
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
 
   List item = [];
   int totalCount = 0;
   int currentPage = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,51 +104,37 @@ class _MyHomePageState extends State<MyHomePage> {
           Padding(
             padding: EdgeInsets.only(left: 10),
           )
-          /*
-          DropdownButton<String>(
-            value: dropdownValue,
-            icon: Icon(Icons.more_vert),
-            items: [
-              DropdownMenuItem(
-                  value: 'about',
-                  child: ListTile(
-                    title: Text('About'),
-                  )),
-              DropdownMenuItem(
-                  value: 'help',
-                  child: ListTile(
-                    title: Text('Help'),
-                  )),
-              DropdownMenuItem(
-                  value: 'exit',
-                  child: ListTile(
-                    title: Text('Exit'),
-                  )),
-            ],
-            onChanged: (String newValue) {
-              setState(() {
-                dropdownValue = newValue;
-              });
-            },
-          ),*/
         ],
       ),
       body: Container(
-        child: LoadMore(
-          delegate: TestDelegate(),
-          textBuilder: (status) {
-            if (status == LoadMoreStatus.nomore && totalCount == 0) {
-              return "No records found";
-            }
+        child: RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: _refresh,
+          child: LoadMore(
+            delegate: TestDelegate(),
+            textBuilder: (status) {
+              if (status == LoadMoreStatus.nomore && totalCount == 0) {
+                return "No records found";
+              }
 
-            return DefaultLoadMoreTextBuilder.english(status);
-          },
-          child: _buildListView(item),
-          isFinish: _isFinish(),
-          onLoadMore: _loadPosts,
+              return DefaultLoadMoreTextBuilder.english(status);
+            },
+            child: _buildListView(item),
+            isFinish: _isFinish(),
+            onLoadMore: _loadPosts,
+          ),
         ),
       ),
     );
+  }
+
+  Future<String> _refresh() async {
+    setState(() {
+      item = [];
+      totalCount = 0;
+      currentPage = 0;
+    });
+    return 'success';
   }
 
   Widget _buildListView(data) {

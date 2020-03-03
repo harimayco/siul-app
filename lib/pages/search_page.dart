@@ -22,7 +22,6 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  int _counter = 0;
   String dropdownValue = '';
   final _formKey = GlobalKey<FormState>();
   final _searchController = TextEditingController();
@@ -129,16 +128,22 @@ class _SearchPageState extends State<SearchPage> {
         itemCount: data.length,
         itemBuilder: (BuildContext context, index) {
           return ListTile(
-            leading: Container(
+            leading: Hero(
+              tag: 'article-image-' + data[index]['id'].toString(),
+              child: Container(
                 width: 30.0,
                 height: 30.0,
                 decoration: new BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: new DecorationImage(
-                        fit: BoxFit.cover,
-                        image: data[index]['image'] != null
-                            ? NetworkImage("$API_URL/${data[index]['image']}")
-                            : AssetImage('assets/logo_dishub.png')))),
+                  shape: BoxShape.circle,
+                  image: new DecorationImage(
+                    fit: BoxFit.cover,
+                    image: data[index]['image'] != null
+                        ? NetworkImage("$API_URL/${data[index]['image']}")
+                        : AssetImage('assets/logo_dishub.png'),
+                  ),
+                ),
+              ),
+            ),
             title: Text(data[index]['title']),
             onTap: () {
               Navigator.pushNamed(context, '/article', arguments: [

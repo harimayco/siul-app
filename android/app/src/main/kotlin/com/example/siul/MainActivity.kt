@@ -1,4 +1,4 @@
-package com.example.siul
+package com.android.siul
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
