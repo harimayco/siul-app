@@ -164,18 +164,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (BuildContext context, index) {
+          print(data[index]['image']);
           return ListTile(
-            leading: Container(
-                width: 30.0,
-                height: 30.0,
-                decoration: data[index]['image'] != null
-                    ? new BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: new DecorationImage(
-                            fit: BoxFit.cover,
-                            image: new NetworkImage(
-                                "$API_URL/${data[index]['image']}")))
-                    : null),
+            leading: Hero(
+              tag: 'article-image-' + data[index]['id'].toString(),
+              child: Container(
+                  width: 30.0,
+                  height: 30.0,
+                  decoration: new BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                          fit: BoxFit.cover,
+                          image: data[index]['image'] != null
+                              ? NetworkImage("$API_URL/${data[index]['image']}")
+                              : AssetImage('assets/logo_dishub.png')))),
+            ),
             title: Text(data[index]['title']),
             onTap: () {
               Navigator.pushNamed(context, '/article', arguments: [
@@ -184,6 +187,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 data[index]['image']
               ]);
             },
+            trailing: Icon(Icons.arrow_forward_ios),
+            dense: true,
           );
         });
   }

@@ -18,6 +18,7 @@ class Article extends StatelessWidget {
     return Scaffold(
         body: CustomScrollView(slivers: <Widget>[
       SliverAppBar(
+        actionsIconTheme: IconThemeData(),
         expandedHeight: 200,
         floating: false,
         pinned: true,
@@ -39,7 +40,7 @@ class Article extends StatelessWidget {
                 fontSize: 16.0,
                 shadows: [
                   Shadow(
-                    blurRadius: 5.0,
+                    blurRadius: 7.0,
                     color: Colors.black,
                     offset: Offset(0, 0),
                   ),
@@ -48,16 +49,19 @@ class Article extends StatelessWidget {
             ),
             background: Stack(
               children: <Widget>[
-                Container(
-                  decoration: imageUrl != null
-                      ? BoxDecoration(
-                          color: Colors.transparent,
-                          image: DecorationImage(
-                              fit: BoxFit.fill,
-                              image: NetworkImage('$API_URL/$imageUrl')),
-                        )
-                      : null,
-                  height: 350.0,
+                Hero(
+                  tag: 'article-image-' + id.toString(),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: imageUrl != null
+                              ? NetworkImage('$API_URL/$imageUrl')
+                              : AssetImage('assets/logo_dishub.png')),
+                    ),
+                    height: 350.0,
+                  ),
                 ),
                 Container(
                   height: 350.0,
@@ -68,7 +72,7 @@ class Article extends StatelessWidget {
                           end: FractionalOffset.bottomCenter,
                           colors: [
                             Colors.grey.withOpacity(0.0),
-                            Colors.blue,
+                            Colors.black38,
                           ],
                           stops: [
                             0.0,
@@ -101,36 +105,6 @@ class Article extends StatelessWidget {
           ),
         ),
       )
-      /*
-      SliverList(
-        delegate: SliverChildListDelegate(
-          [
-            Container(color: Colors.pink, height: 150.0),
-            Container(color: Colors.cyan, height: 150.0),
-            Container(color: Colors.indigo, height: 150.0),
-            Container(color: Colors.blue, height: 150.0),
-            Card(
-              child: Text(
-                  'fsaifja gaiughasu igahgiuasg ahguia igaughau iighaisu dhsoifhsdo fiuhsoifushfi uoshfiosf oghdis go hshg ouhgios guh gosh '),
-            ),
-            Card(
-              child: FutureBuilder(
-                future: _getArticleContent(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.hasData) {
-                    String markdown = html2md.convert(snapshot.data);
-                    return Markdown(
-                      data: markdown,
-                    );
-                  }
-
-                  return Center(child: CircularProgressIndicator());
-                },
-              ),
-            ),
-          ],
-        ),
-      ),*/
     ]));
   }
 

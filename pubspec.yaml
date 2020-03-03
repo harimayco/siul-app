@@ -23,6 +23,8 @@ dependencies:
   flutter_markdown: ^0.3.4
   splashscreen: ^1.2.0
   loadmore: ^1.0.4
+  easy_debounce: ^1.0.1
+  flutter_native_splash: ^0.1.9
   
 
   # The following adds the Cupertino Icons font to your application.
@@ -84,3 +86,8 @@ flutter_icons:
   android: true
   ios: true
   image_path: 'assets/launcher_icon.png'
+
+flutter_native_splash:
+  image: assets/logo_dishub_splash.png
+  color: "0000b5"
+  fill: true
