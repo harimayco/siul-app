@@ -93,22 +93,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 return [
                   PopupMenuItem(
                     value: 'about',
-                    child: InkWell(
-                      onTap: () {},
-                      child: ListTile(
-                        title: Text('About'),
-                      ),
+                    child: ListTile(
+                      title: Text('About'),
                     ),
                   ),
                   PopupMenuItem(
                     value: 'help',
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/help');
-                      },
-                      child: ListTile(
-                        title: Text('Help'),
-                      ),
+                    child: ListTile(
+                      title: Text('Help'),
                     ),
                   ),
                   PopupMenuItem(
