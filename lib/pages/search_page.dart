@@ -3,6 +3,7 @@ import 'package:siul/utils/env.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:loadmore/loadmore.dart';
+import 'package:easy_debounce/easy_debounce.dart';
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key}) : super(key: key);
@@ -21,7 +22,6 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  int _counter = 0;
   String dropdownValue = '';
   final _formKey = GlobalKey<FormState>();
   final _searchController = TextEditingController();
@@ -30,17 +30,6 @@ class _SearchPageState extends State<SearchPage> {
   List item = [];
   int totalCount = 0;
   int currentPage = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,41 +41,37 @@ class _SearchPageState extends State<SearchPage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
+        elevation: 1,
         // Here we take the value from the SearchPage object that was created by
         // the App.build method, and use it to set our appbar title.
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.black),
+        actionsIconTheme: IconThemeData(color: Colors.black),
         title: Form(
           key: _formKey,
           child: TextFormField(
             controller: _searchController,
             autofocus: true,
-            cursorColor: Colors.white,
             showCursor: true,
             autocorrect: false,
-            onFieldSubmitted: (value) {
-              setState(() {
-                item = [];
-                totalCount = 0;
-                currentPage = 0;
-
-                _searchText = value;
-              });
+            onChanged: (String value) {
+              EasyDebounce.debounce(
+                  'search-debounce', // <-- An ID for this particular debouncer
+                  Duration(milliseconds: 300), // <-- The debounce duration
+                  () => _submitSearch(value) // <-- The target method
+                  );
             },
-            style: new TextStyle(color: Colors.white),
+            onFieldSubmitted: (String value) {},
             decoration: InputDecoration(
-              focusColor: Colors.white,
               hasFloatingPlaceholder: false,
               hintText: 'Search',
-              fillColor: Colors.white,
               alignLabelWithHint: true,
               focusedBorder: OutlineInputBorder(
                 gapPadding: 1,
                 borderSide: BorderSide(color: Colors.transparent),
               ),
               suffixIcon: IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.white54,
-                  ),
+                  icon: Icon(Icons.close),
                   onPressed: () {
                     _searchController.clear();
                   }),
@@ -99,44 +84,12 @@ class _SearchPageState extends State<SearchPage> {
               onPressed: () {
                 if (_formKey.currentState.validate()) {
                   // Process data.
-                  setState(() {
-                    item = [];
-                    totalCount = 0;
-                    currentPage = 0;
-
-                    _searchText = _searchController.text.toString();
-                  });
+                  _submitSearch(_searchController.text.toString());
                 }
               }),
-          /*
-          DropdownButton<String>(
-            value: dropdownValue,
-            icon: Icon(Icons.more_vert),
-            items: [
-              DropdownMenuItem(
-                  value: 'about',
-                  child: ListTile(
-                    title: Text('About'),
-                  )),
-              DropdownMenuItem(
-                  value: 'help',
-                  child: ListTile(
-                    title: Text('Help'),
-                  )),
-              DropdownMenuItem(
-                  value: 'exit',
-                  child: ListTile(
-                    title: Text('Exit'),
-                  )),
-            ],
-            onChanged: (String newValue) {
-              setState(() {
-                dropdownValue = newValue;
-              });
-            },
-          ),*/
         ],
       ),
+      backgroundColor: Colors.white,
       body: Container(
         child: _searchText == ''
             ? null
@@ -147,6 +100,9 @@ class _SearchPageState extends State<SearchPage> {
                     return "No records found";
                   }
 
+                  if (status == LoadMoreStatus.nomore) {
+                    return '';
+                  }
                   return DefaultLoadMoreTextBuilder.english(status);
                 },
                 child: _buildListView(item),
@@ -157,22 +113,37 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  void _submitSearch([String value = '']) {
+    setState(() {
+      item = [];
+      totalCount = 0;
+      currentPage = 0;
+
+      _searchText = value;
+    });
+  }
+
   Widget _buildListView(data) {
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (BuildContext context, index) {
           return ListTile(
-            leading: Container(
+            leading: Hero(
+              tag: 'article-image-' + data[index]['id'].toString(),
+              child: Container(
                 width: 30.0,
                 height: 30.0,
-                decoration: data[index]['image'] != null
-                    ? new BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: new DecorationImage(
-                            fit: BoxFit.cover,
-                            image: new NetworkImage(
-                                "$API_URL/${data[index]['image']}")))
-                    : null),
+                decoration: new BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: new DecorationImage(
+                    fit: BoxFit.cover,
+                    image: data[index]['image'] != null
+                        ? NetworkImage("$API_URL/${data[index]['image']}")
+                        : AssetImage('assets/logo_dishub.png'),
+                  ),
+                ),
+              ),
+            ),
             title: Text(data[index]['title']),
             onTap: () {
               Navigator.pushNamed(context, '/article', arguments: [
@@ -181,6 +152,7 @@ class _SearchPageState extends State<SearchPage> {
                 data[index]['image']
               ]);
             },
+            dense: true,
           );
         });
   }

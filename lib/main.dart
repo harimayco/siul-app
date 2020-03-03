@@ -3,7 +3,6 @@ import 'package:siul/pages/about.dart';
 import 'package:siul/pages/article.dart';
 import 'package:siul/pages/home_page.dart';
 import 'package:siul/pages/search_page.dart';
-import 'package:siul/utils/splash.dart';
 import 'package:siul/pages/help.dart';
 
 void main() => runApp(MyApp());
@@ -26,12 +25,17 @@ class MyApp extends StatelessWidget {
           // Notice that the counter didn't reset back to zero; the application
           // is not restarted.
           primaryColor: Colors.blue[900],
+          appBarTheme: AppBarTheme(
+            actionsIconTheme: IconThemeData(color: Colors.yellow[600]),
+            iconTheme: IconThemeData(color: Colors.yellow[600]),
+            elevation: 5,
+          ),
         ),
         initialRoute: '/',
         routes: {
           // When navigating to the "/" route, build the FirstScreen widget.
-          '/': (context) => Splash(),
-          '/home': (context) => MyHomePage(),
+
+          '/': (context) => MyHomePage(),
           // When navigating to the "/second" route, build the SecondScreen widget.
           '/search': (context) => SearchPage(),
           '/about': (context) => AboutPage(),
@@ -50,6 +54,7 @@ class MyApp extends StatelessWidget {
               },
             );
           }
+          return null;
         });
   }
 }
