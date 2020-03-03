@@ -175,8 +175,10 @@ class _MyHomePageState extends State<MyHomePage> {
       return false;
     }
 
-    if (item.length < totalCount) {
-      return false;
+    if (item.length != null && totalCount != null) {
+      if (item.length < totalCount) {
+        return false;
+      }
     }
 
     return true;
@@ -191,12 +193,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body);
-      setState(() {
-        currentPage = jsonResponse['current_page'];
-
-        item.addAll(jsonResponse['data']);
-        totalCount = jsonResponse['total'];
-      });
+      currentPage = jsonResponse['current_page'];
+      totalCount = jsonResponse['total'] != null ? jsonResponse['total'] : null;
+      item.addAll(jsonResponse['data']);
+      setState(() {});
 
       return true;
     }

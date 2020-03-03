@@ -162,10 +162,11 @@ class _SearchPageState extends State<SearchPage> {
       return false;
     }
 
-    if (item.length < totalCount) {
-      return false;
+    if (item.length != null && totalCount != null) {
+      if (item.length < totalCount) {
+        return false;
+      }
     }
-
     return true;
   }
 
