@@ -161,6 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(data[index]['pelaku']),
+            isThreeLine: true,
             onTap: () {
               Navigator.pushNamed(context, '/article', arguments: [
                 data[index]['id'],
