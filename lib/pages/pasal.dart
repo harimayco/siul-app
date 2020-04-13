@@ -63,7 +63,7 @@ class PasalPage extends StatelessWidget {
               context,
               '/pasal',
               arguments: [
-                item['id'],
+                item['id_pasal_rel'],
                 item['label'],
               ],
             );
