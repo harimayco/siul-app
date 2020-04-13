@@ -141,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (BuildContext context, index) {
-          print(data[index]['image']);
+          //print(data[index]['image']);
           return ListTile(
             leading: Hero(
               tag: 'article-image-' + data[index]['id'].toString(),
