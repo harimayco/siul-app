@@ -175,7 +175,7 @@ class _SearchPageState extends State<SearchPage> {
                   context,
                   '/pasal',
                   arguments: [
-                    item['id'],
+                    item['id_uu_lalulintas'],
                     item['label'],
                   ],
                 );

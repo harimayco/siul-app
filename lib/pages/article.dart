@@ -174,7 +174,7 @@ class Article extends StatelessWidget {
                   context,
                   '/pasal',
                   arguments: [
-                    item['id'],
+                    item['id_uu_lalulintas'],
                     item['label'],
                   ],
                 );
