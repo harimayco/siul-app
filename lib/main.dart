@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:siul/pages/about.dart';
 import 'package:siul/pages/article.dart';
 import 'package:siul/pages/home_page.dart';
+import 'package:siul/pages/pasal.dart';
 import 'package:siul/pages/search_page.dart';
 import 'package:siul/pages/help.dart';
 
@@ -50,6 +51,22 @@ class MyApp extends StatelessWidget {
                   id: args[0],
                   title: args[1],
                   imageUrl: args[2],
+                  perbuatan: args[3],
+                  uu: args[4],
+                  pelaku: args[5],
+                  poinPenalti: args[6],
+                  dendaMaksimal: args[7],
+                );
+              },
+            );
+          }
+          if (settings.name == '/pasal') {
+            final List args = settings.arguments;
+            return MaterialPageRoute(
+              builder: (context) {
+                return PasalPage(
+                  id: args[0],
+                  title: args[1],
                 );
               },
             );

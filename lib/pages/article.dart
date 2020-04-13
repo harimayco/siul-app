@@ -9,8 +9,22 @@ class Article extends StatelessWidget {
   final String title;
   final String imageUrl;
   final int id;
+  final String perbuatan;
+  final List uu;
+  final String pelaku;
+  final String dendaMaksimal;
+  final String poinPenalti;
 
-  const Article({Key key, this.title, this.imageUrl, @required this.id})
+  const Article(
+      {Key key,
+      this.title,
+      this.uu,
+      this.perbuatan,
+      this.imageUrl,
+      this.pelaku,
+      this.dendaMaksimal,
+      this.poinPenalti,
+      @required this.id})
       : super(key: key);
 
   @override
@@ -87,25 +101,91 @@ class Article extends StatelessWidget {
       SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: FutureBuilder(
-            future: _getArticleContent(),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
-                String markdown = html2md.convert(snapshot.data);
-                return Padding(
-                  padding: EdgeInsets.all(10),
-                  child: MarkdownBody(
-                    data: markdown,
-                  ),
-                );
-              }
-
-              return Center(child: CircularProgressIndicator());
-            },
+          child: Padding(
+            padding: EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  "Pelaku:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  pelaku,
+                  //style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  "Pelanggaran:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                MarkdownBody(
+                  data: html2md.convert(perbuatan),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  "Poin Penalti:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  poinPenalti,
+                  //style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  "Denda Maksimal:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  dendaMaksimal,
+                  //style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  "Pasal:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                _buildPasal(),
+              ],
+            ),
           ),
         ),
       )
     ]));
+  }
+
+  _buildPasal() {
+    //print(uu);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: uu.map((item) {
+          return Builder(builder: (BuildContext context) {
+            return InkWell(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/pasal',
+                  arguments: [
+                    item['id'],
+                    item['label'],
+                  ],
+                );
+              },
+              child: new Text(
+                " - " + item['label'],
+                style: TextStyle(color: Colors.blue),
+              ),
+            );
+          });
+        }).toList());
   }
 
   Future _getArticleContent() async {

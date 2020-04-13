@@ -144,17 +144,49 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               ),
             ),
-            title: Text(data[index]['title']),
+            title: Text(data[index]['label'].toUpperCase()),
+            subtitle: _buildPasal(data[index]['uu']),
             onTap: () {
               Navigator.pushNamed(context, '/article', arguments: [
                 data[index]['id'],
-                data[index]['title'],
-                data[index]['image']
+                data[index]['label'].toUpperCase(),
+                data[index]['image'],
+                data[index]['perbuatan'],
+                data[index]['uu'],
+                data[index]['pelaku'],
+                data[index]['poin_penalti'],
+                data[index]['denda_maksimal']
               ]);
             },
             dense: true,
           );
         });
+  }
+
+  _buildPasal(List uu) {
+    //print(uu);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: uu.map((item) {
+          return Builder(builder: (BuildContext context) {
+            return InkWell(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/pasal',
+                  arguments: [
+                    item['id'],
+                    item['label'],
+                  ],
+                );
+              },
+              child: new Text(
+                " - " + item['label'],
+                style: TextStyle(color: Colors.blue),
+              ),
+            );
+          });
+        }).toList());
   }
 
   bool _isFinish() {
@@ -171,7 +203,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<bool> _loadPosts() async {
-    var url = '$API_URL/api/post?search=' +
+    var url = '$API_URL/api/pelanggaran?search=' +
         _searchText +
         '&page=' +
         (currentPage + 1).toString();
@@ -183,10 +215,10 @@ class _SearchPageState extends State<SearchPage> {
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body);
       setState(() {
-        currentPage = jsonResponse['current_page'];
+        currentPage = jsonResponse['meta']['current_page'];
 
         item.addAll(jsonResponse['data']);
-        totalCount = jsonResponse['total'];
+        totalCount = jsonResponse['meta']['total'];
       });
 
       return true;

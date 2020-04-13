@@ -156,12 +156,21 @@ class _MyHomePageState extends State<MyHomePage> {
                               ? NetworkImage("$API_URL/${data[index]['image']}")
                               : AssetImage('assets/logo_dishub.png')))),
             ),
-            title: Text(data[index]['title']),
+            title: Text(
+              data[index]['label'].toUpperCase(),
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(data[index]['pelaku']),
             onTap: () {
               Navigator.pushNamed(context, '/article', arguments: [
                 data[index]['id'],
-                data[index]['title'],
-                data[index]['image']
+                data[index]['label'].toUpperCase(),
+                data[index]['image'],
+                data[index]['perbuatan'],
+                data[index]['uu'],
+                data[index]['pelaku'],
+                data[index]['poin_penalti'],
+                data[index]['denda_maksimal']
               ]);
             },
             trailing: Icon(Icons.arrow_forward_ios),
@@ -185,7 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<bool> _loadPosts() async {
-    var url = '$API_URL/api/post?page=' + (currentPage + 1).toString();
+    var url = '$API_URL/api/pelanggaran?page=' + (currentPage + 1).toString();
     //await Future.delayed(Duration(seconds: 3));
     // Await the http get response, then decode the json-formatted response.
     //var wait = await Future.delayed(Duration(seconds: 2));
@@ -193,8 +202,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body);
-      currentPage = jsonResponse['current_page'];
-      totalCount = jsonResponse['total'] != null ? jsonResponse['total'] : null;
+      currentPage = jsonResponse['meta']['current_page'];
+      totalCount = jsonResponse['meta']['total'] != null
+          ? jsonResponse['meta']['total']
+          : null;
       item.addAll(jsonResponse['data']);
       setState(() {});
 
